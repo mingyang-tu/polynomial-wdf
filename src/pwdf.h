@@ -15,7 +15,7 @@ class PolynomialWDF4 {
 
    private:
     const double d1, d2, d1m, d2m;
-    const double d[4] = {d1, d2, d1m, d2m};
+    const double d[4] = {d1, d2, -d1m, -d2m};
 
     int p_min(int n, int n1, int n2);
     int p_max(int n, int n1, int n2);
