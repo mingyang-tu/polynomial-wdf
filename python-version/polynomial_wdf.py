@@ -20,6 +20,7 @@ class PolynomialWDF4:
         self.d2 = d2
         self.d1m = d1m
         self.d2m = d2m
+        self.d_all = [d1, d2, -d1m, -d2m]
 
     def __call__(self, x, dt, df):
         T = len(x)
@@ -33,13 +34,13 @@ class PolynomialWDF4:
         for n in range(T):
             kernel = np.zeros(N, dtype=np.complex128)
             p_min, p_max = self.p_range(n, n1, n2)
-            for p in range(p_min, p_max + 1):
-                kernel[p - p_min] = (
-                    self.interp(x, n + self.d1 * p)
-                    * self.interp(x_conj, n - self.d1m * p)
-                    * self.interp(x, n + self.d2 * p)
-                    * self.interp(x_conj, n - self.d2m * p)
-                )
+            p_indexes = np.arange(p_min, p_max + 1)
+            kernel[: p_indexes.shape[0]] = (
+                self.interp(x, n + self.d1 * p_indexes)
+                * self.interp(x_conj, n - self.d1m * p_indexes)
+                * self.interp(x, n + self.d2 * p_indexes)
+                * self.interp(x_conj, n - self.d2m * p_indexes)
+            )
             dft = np.fft.fft(kernel)
             output[:, n] = dt * np.exp(1j * 2 * np.pi * m * p_min / N) * dft
 
@@ -48,7 +49,7 @@ class PolynomialWDF4:
     def p_range(self, n, n1, n2):
         p_max = n2 - n1
         p_min = -p_max
-        for d in [self.d1, self.d2, -self.d1m, -self.d2m]:
+        for d in self.d_all:
             if d > 0:
                 p_min = max((n1 - n) / d, p_min)
                 p_max = min((n2 - n) / d, p_max)
@@ -58,8 +59,8 @@ class PolynomialWDF4:
         return ceil(p_min), floor(p_max)
 
     def interp(self, x, target):
-        x_floor = floor(target)
-        x_ceil = ceil(target)
+        x_floor = np.floor(target).astype(int)
+        x_ceil = np.ceil(target).astype(int)
         return x[x_floor] + (x[x_ceil] - x[x_floor]) * (target - x_floor)
 
 

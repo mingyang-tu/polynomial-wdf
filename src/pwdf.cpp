@@ -1,9 +1,9 @@
 #include "pwdf.h"
 
-inline void fft1d(vector<complex<double>>& x, vector<complex<double>>& y) {
+inline void fft1d(vector<complex<double>>& x, vector<complex<double>>& y, int N) {
     fftw_complex* in = reinterpret_cast<fftw_complex*>(x.data());
     fftw_complex* out = reinterpret_cast<fftw_complex*>(y.data());
-    fftw_plan plan = fftw_plan_dft_1d(x.size(), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_plan plan = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(plan);
     fftw_destroy_plan(plan);
 }
@@ -38,6 +38,7 @@ vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<
         x_conj[i] = conj(x[i]);
 
     vector<vector<complex<double>>> output(N, vector<complex<double>>(T));
+    complex<double> bias = complex<double>(0, 1) * (2.0 * M_PI / N);
 
     for (int n = 0; n < T; n++) {
         vector<complex<double>> kernel(N, 0);
@@ -47,9 +48,10 @@ vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<
                                 interp(x, n + d2 * p) * interp(x_conj, n - d2m * p);
         }
         vector<complex<double>> dft(N);
-        fft1d(kernel, dft);
+        fft1d(kernel, dft, N);
+        complex<double> bias_p = bias * (double)p_min;
         for (int m = 0; m < N; m++)
-            output[m][n] = dt * exp(complex<double>(0, 1) * (2.0 * M_PI * m * p_min / N)) * dft[m];
+            output[m][n] = dt * exp(bias_p * (double)m) * dft[m];
     }
 
     return output;
