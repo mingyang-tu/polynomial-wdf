@@ -11,7 +11,7 @@ $d_1, d_2, d_{-1}, d_{-2}$ must satisfy
 ## Requirements
 
 - CMake
-- [FFTW](https://fftw.org/) (for 1D-FFT)
+- [FFTW](https://fftw.org/) version 3.3.10 (for 1D-FFT)
 - [matplotlib-cpp](https://github.com/lava/matplotlib-cpp) (Download and save it in the `./include/` directory)
 - Python, NumPy (for [matplotlib-cpp](https://github.com/lava/matplotlib-cpp))
 

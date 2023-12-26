@@ -19,6 +19,7 @@ file(GLOB SRC_FILES
 
 add_executable(${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE FFTW3::fftw3 Python3::Python Python3::NumPy)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE FFTW3::fftw3)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Python3::Python Python3::Module Python3::NumPy)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
