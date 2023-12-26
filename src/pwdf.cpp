@@ -43,6 +43,9 @@ vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<
         x_conj[i] = conj(x[i]);
 
     int f_start = (int(round(f[0] / df)) % N + N) % N;
+    vector<int> m(F);
+    for (int i = 0; i < F; i++)
+        m[i] = (i + f_start) % N;
 
     vector<vector<complex<double>>> output(F, vector<complex<double>>(T));
     complex<double> bias = complex<double>(0, 1) * (2.0 * M_PI / N);
@@ -58,8 +61,7 @@ vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<
         fft1d(kernel, dft, N);
         complex<double> bias_p = bias * (double)p_min;
         for (int i = 0; i < F; i++) {
-            int m = (i + f_start) % N;
-            output[i][n] = dt * exp(bias_p * (double)m) * dft[m];
+            output[i][n] = dt * exp(bias_p * double(m[i])) * dft[m[i]];
         }
     }
 
