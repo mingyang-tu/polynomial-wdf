@@ -1,12 +1,31 @@
 #include "matplotlibcpp.h"
 #include "pwdf.h"
-#include "utils.h"
+#include "timer.h"
 
 #define JJ complex<double>(0, 1)
 
 namespace plt = matplotlibcpp;
 
 using namespace std;
+
+vector<int> get_ticks(int start, int end, int num_ticks) {
+    vector<int> ticks;
+    int step = (end - start) / (num_ticks - 1);
+    for (int i = start; i <= end; i += step)
+        ticks.push_back(i);
+    return ticks;
+}
+
+vector<std::string> get_ticklabels(double start, double end, int num_ticks) {
+    vector<std::string> ticklabels;
+    double step = (end - start) / (num_ticks - 1);
+    for (double i = start; i <= end; i += step) {
+        stringstream ss;
+        ss << i;
+        ticklabels.push_back(ss.str());
+    }
+    return ticklabels;
+}
 
 // visualize the result
 void visualize(vector<vector<complex<double>>> result, double t_min, double t_max, double f_min,

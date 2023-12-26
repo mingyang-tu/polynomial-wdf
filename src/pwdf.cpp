@@ -1,8 +1,12 @@
 #include "pwdf.h"
 
-#include "fft.h"
-
-using namespace std;
+inline void fft1d(vector<complex<double>>& x, vector<complex<double>>& y) {
+    fftw_complex* in = reinterpret_cast<fftw_complex*>(x.data());
+    fftw_complex* out = reinterpret_cast<fftw_complex*>(y.data());
+    fftw_plan plan = fftw_plan_dft_1d(x.size(), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(plan);
+    fftw_destroy_plan(plan);
+}
 
 PolynomialWDF4::PolynomialWDF4(double d1, double d2, double d1m, double d2m)
     : d1(d1), d2(d2), d1m(d1m), d2m(d2m) {

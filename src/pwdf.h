@@ -5,8 +5,9 @@
 #include <iostream>
 #include <vector>
 
-using std::complex;
-using std::vector;
+#include "fftw3.h"
+
+using namespace std;
 
 class PolynomialWDF4 {
    public:
