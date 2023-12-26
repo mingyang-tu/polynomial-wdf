@@ -22,14 +22,17 @@ class PolynomialWDF4:
         self.d2m = d2m
         self.d_all = [d1, d2, -d1m, -d2m]
 
-    def __call__(self, x, dt, df):
-        T = len(x)
+    def __call__(self, x, t, f, dt, df):
+        assert len(x) == len(t)
+        T = len(t)
+        F = len(f)
         N = int(1 / (dt * df))
         n1, n2 = 0, len(x) - 1
 
         x_conj = np.conj(x)
-        m = np.arange(0, N, dtype=np.float64)
-        output = np.zeros((N, T), dtype=np.complex128)
+        f_idx = np.arange(int(f[0] / df), int(f[-1] / df) + 1) % N
+        m = np.arange(0, N, dtype=np.float64)[f_idx]
+        output = np.zeros((F, T), dtype=np.complex128)
 
         for n in range(T):
             kernel = np.zeros(N, dtype=np.complex128)
@@ -42,7 +45,7 @@ class PolynomialWDF4:
                 * self.interp(x_conj, n - self.d2m * p_indexes)
             )
             dft = np.fft.fft(kernel)
-            output[:, n] = dt * np.exp(1j * 2 * np.pi * m * p_min / N) * dft
+            output[:, n] = dt * np.exp(1j * 2 * np.pi * m * p_min / N) * dft[f_idx]
 
         return output
 
@@ -64,14 +67,13 @@ class PolynomialWDF4:
         return x[x_floor] + (x[x_ceil] - x[x_floor]) * (target - x_floor)
 
 
-def visualize(wigner, t_range, f_range, df):
-    t_min, t_max = t_range
-    f_min, f_max = f_range
-    f_idx = np.arange(int(f_min / df), int(f_max / df)) % wigner.shape[0]
+def visualize(wigner, t, f):
+    t_min, t_max = t[0], t[-1]
+    f_min, f_max = f[0], f[-1]
 
     plt.figure()
     plt.imshow(
-        np.abs(wigner[f_idx, :]),
+        np.abs(wigner),
         cmap="gray",
         origin="lower",
         aspect="auto",
@@ -88,14 +90,15 @@ def main():
     df = 0.0125
 
     t = np.arange(0, 10, dt)
+    f = np.arange(-5, 15, df)
     x = np.exp(1j * (t - 5) ** 3)
 
     start = time.time()
-    pwdf = PolynomialWDF4()(x, dt, df)
+    pwdf = PolynomialWDF4()(x, t, f, dt, df)
     end = time.time()
     print(f"Elapsed time: {end - start} s")
 
-    visualize(pwdf, [0, 10], [-5, 15], df)
+    visualize(pwdf, t, f)
 
 
 if __name__ == "__main__":

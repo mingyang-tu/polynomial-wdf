@@ -12,7 +12,8 @@ using namespace std;
 class PolynomialWDF4 {
    public:
     PolynomialWDF4(double d1 = -1.1151, double d2 = 0.4484, double d1m = 0.6667, double d2m = 1.0);
-    vector<vector<complex<double>>> operator()(const vector<complex<double>>& x, double dt, double df);
+    vector<vector<complex<double>>> operator()(const vector<complex<double>>& x, const vector<double>& t,
+                                               const vector<double>& f, double dt, double df);
 
    private:
     const double d1, d2, d1m, d2m;

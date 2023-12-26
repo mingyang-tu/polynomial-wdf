@@ -23,13 +23,18 @@ PolynomialWDF4::PolynomialWDF4(double d1, double d2, double d1m, double d2m)
         cout << "Warning: d_1^3 + d_2^3 + d_-1^3 + d_-2^3 = " << rule3 << " (should be 0)" << endl;
 }
 
-// x: input signal
-// dt: time resolution
-// df: frequency resolution
+// x: input signal, t: time vector, f: frequency vector
+// dt: time step, df: frequency step
 // return: 2D vector of complex numbers
-vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<double>>& x, double dt,
+vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<double>>& x,
+                                                           const vector<double>& t,
+                                                           const vector<double>& f, double dt,
                                                            double df) {
-    const int T = x.size();
+    if (t.size() != x.size())
+        throw invalid_argument("t and x must have the same size");
+
+    const int T = t.size();
+    const int F = f.size();
     const int N = int(1 / (dt * df));
     const int n1 = 0, n2 = x.size() - 1;
 
@@ -37,7 +42,9 @@ vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<
     for (int i = 0; i < T; i++)
         x_conj[i] = conj(x[i]);
 
-    vector<vector<complex<double>>> output(N, vector<complex<double>>(T));
+    int f_start = (int(round(f[0] / df)) % N + N) % N;
+
+    vector<vector<complex<double>>> output(F, vector<complex<double>>(T));
     complex<double> bias = complex<double>(0, 1) * (2.0 * M_PI / N);
 
     for (int n = 0; n < T; n++) {
@@ -50,8 +57,10 @@ vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<
         vector<complex<double>> dft(N);
         fft1d(kernel, dft, N);
         complex<double> bias_p = bias * (double)p_min;
-        for (int m = 0; m < N; m++)
-            output[m][n] = dt * exp(bias_p * (double)m) * dft[m];
+        for (int i = 0; i < F; i++) {
+            int m = (i + f_start) % N;
+            output[i][n] = dt * exp(bias_p * (double)m) * dft[m];
+        }
     }
 
     return output;
