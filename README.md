@@ -17,9 +17,7 @@ $d_1, d_2, d_{-1}, d_{-2}$ must satisfy
 
 ## Usage
 
-See `./src/main.cpp`
-
-## Run
+An example can be found in `./src/main.cpp`. Run it with the following commands.
 
 ```bash
 mkdir build
