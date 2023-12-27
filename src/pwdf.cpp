@@ -1,6 +1,6 @@
 #include "pwdf.h"
 
-inline void fft1d(vector<complex<double>>& x, vector<complex<double>>& y, int N) {
+inline void fft1d(vcd1d& x, vcd1d& y, int N) {
     fftw_complex* in = reinterpret_cast<fftw_complex*>(x.data());
     fftw_complex* out = reinterpret_cast<fftw_complex*>(y.data());
     fftw_plan plan = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
@@ -26,10 +26,8 @@ PolynomialWDF4::PolynomialWDF4(double d1, double d2, double d1m, double d2m)
 // x: input signal, t: time vector, f: frequency vector
 // dt: time step, df: frequency step
 // return: 2D vector of complex numbers
-vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<double>>& x,
-                                                           const vector<double>& t,
-                                                           const vector<double>& f, double dt,
-                                                           double df) {
+vcd2d PolynomialWDF4::operator()(const vcd1d& x, const vector<double>& t, const vector<double>& f,
+                                 double dt, double df) {
     if (t.size() != x.size())
         throw invalid_argument("t and x must have the same size");
 
@@ -38,26 +36,26 @@ vector<vector<complex<double>>> PolynomialWDF4::operator()(const vector<complex<
     const int N = int(1 / (dt * df));
     const int n1 = 0, n2 = x.size() - 1;
 
-    vector<complex<double>> x_conj(T);
+    vcd1d x_conj(T);
     for (int i = 0; i < T; i++)
         x_conj[i] = conj(x[i]);
 
-    int f_start = (int(round(f[0] / df)) % N + N) % N;
+    int f_start = (int(f[0] / df) % N + N) % N;
     vector<int> m(F);
     for (int i = 0; i < F; i++)
         m[i] = (i + f_start) % N;
 
-    vector<vector<complex<double>>> output(F, vector<complex<double>>(T));
+    vcd2d output(F, vcd1d(T));
     complex<double> bias = complex<double>(0, 1) * (2.0 * M_PI / N);
 
     for (int n = 0; n < T; n++) {
-        vector<complex<double>> kernel(N, 0);
+        vcd1d kernel(N, 0);
         int p_min = this->p_min(n, n1, n2), p_max = this->p_max(n, n1, n2);
         for (int p = p_min; p <= p_max; p++) {
             kernel[p - p_min] = interp(x, n + d1 * p) * interp(x_conj, n - d1m * p) *
                                 interp(x, n + d2 * p) * interp(x_conj, n - d2m * p);
         }
-        vector<complex<double>> dft(N);
+        vcd1d dft(N);
         fft1d(kernel, dft, N);
         complex<double> bias_p = bias * (double)p_min;
         for (int i = 0; i < F; i++) {
@@ -90,7 +88,7 @@ int PolynomialWDF4::p_max(int n, int n1, int n2) {
     return floor(p_max);
 }
 
-complex<double> PolynomialWDF4::interp(const vector<complex<double>>& x, double target) {
+complex<double> PolynomialWDF4::interp(const vcd1d& x, double target) {
     int x_floor = floor(target);
     int x_ceil = ceil(target);
     return x[x_floor] + (x[x_ceil] - x[x_floor]) * (target - x_floor);

@@ -28,10 +28,12 @@ class PolynomialWDF4:
         F = len(f)
         N = int(1 / (dt * df))
         n1, n2 = 0, len(x) - 1
+        f1 = int(f[0] / df)
+        f2 = f1 + F - 1
 
         x_conj = np.conj(x)
-        f_idx = np.arange(int(f[0] / df), int(f[-1] / df) + 1) % N
-        m = np.arange(0, N, dtype=np.float64)[f_idx]
+        f_index = np.arange(f1, f2 + 1) % N
+        m = np.arange(0, N, dtype=np.float64)[f_index]
         output = np.zeros((F, T), dtype=np.complex128)
 
         for n in range(T):
@@ -45,7 +47,7 @@ class PolynomialWDF4:
                 * self.interp(x_conj, n - self.d2m * p_indexes)
             )
             dft = np.fft.fft(kernel)
-            output[:, n] = dt * np.exp(1j * 2 * np.pi * m * p_min / N) * dft[f_idx]
+            output[:, n] = dt * np.exp(1j * 2 * np.pi * m * p_min / N) * dft[f_index]
 
         return output
 

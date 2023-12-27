@@ -16,8 +16,8 @@ vector<int> get_ticks(int start, int end, int num_ticks) {
     return ticks;
 }
 
-vector<std::string> get_ticklabels(double start, double end, int num_ticks) {
-    vector<std::string> ticklabels;
+vector<string> get_ticklabels(double start, double end, int num_ticks) {
+    vector<string> ticklabels;
     double step = (end - start) / (num_ticks - 1);
     for (double i = start; i <= end; i += step) {
         stringstream ss;
